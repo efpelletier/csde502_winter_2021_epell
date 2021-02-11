@@ -124,6 +124,7 @@ The standard deviation of these 100 means is `r round(sd(means.list), 2)`.
 # Question 5
 
 ```{r box3}
+set.seed(02102021)
 sampWithRepNTimes <- function(d.vec, n, num.samples) {
   means.list <- c()
   for (i in 1:num.samples) {
