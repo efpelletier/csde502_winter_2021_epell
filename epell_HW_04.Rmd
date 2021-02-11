@@ -1,0 +1,167 @@
+---
+title: "CSDE 502 Assignment 4"
+author: "[Lizzy Pelletier](mailto:epell@uw.edu)"
+date: '`r format(Sys.time(), "%Y-%m-%d %H:%M")`' 
+header-includes: #allows you to add in your own Latex packages
+- \usepackage{float} #use the 'float' package
+- \floatplacement{figure}{H} #make every figure with caption = h
+output: 
+    bookdown::html_document2:
+        number_sections: true
+        self_contained: true
+        code_folding: hide
+        toc: true
+        toc_float:
+            collapsed: true
+            smooth_scroll: false
+    pdf_document:
+        number_sections: true
+        toc: true
+        fig_cap: yes
+        keep_tex: yes
+urlcolor: blue        
+---
+
+<!--these following settings control width and also make a DIV tag for black outlines for figures-->
+<style type="text/css">
+.main-container {
+  max-width: 2400px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+<style>
+.outline {
+   background-color: #000000;
+   padding:1px;
+   display: inline-block;
+}
+</style>
+
+
+```{r setup, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# key setups
+library(sqldf) # to use sql syntax with data frames
+library(knitr) # knitr for kable tables
+library(kableExtra) # pretty tables
+library(sf) # simple features (GIS)
+library(leaflet) # nice maps
+library(tools) # md5sum
+library(tidyverse)
+library(haven)
+library(RColorBrewer)
+library(bookdown)
+# captions
+library(captioner)
+devtools::install_github("ciannabp/inauguration")
+library(inauguration)
+
+table_nums <- captioner(prefix = "Table")
+figure_nums <- captioner(prefix = "Figure")
+
+
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+cols <- inauguration(name="inauguration_2021")
+```
+
+<!-- for a wide presentation -->
+<style type="text/css">
+.main-container {
+  max-width: 2400px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+<!-- a DIV for black outline, good for figures-->
+<style>
+.outline {
+   background-color: #000000;
+   padding:1px;
+   display: inline-block;
+}
+</style>
+
+```{r createdata}
+gradpain <- c(rep(0,11), rep(1,1), rep(2,2), rep(3,6), rep(4,8), rep(5,10),
+rep(6,8), rep(7,30), rep(8,10), rep(9,6), rep(10,2))
+```
+
+# Question 1
+
+There are `r length(gradpain)` graduate students in the sample. 
+
+# Question 2
+
+The sample mean is `r mean(gradpain)`.
+
+# Question 3
+
+```{r box1}
+# Generate function
+sampWithRep <- function(d.vec, n) {
+  samp <- sample(d.vec, size=n, replace=TRUE)
+  sampsize <- length(samp)
+  mean <- mean(samp)
+  return(list(sampsize, mean))
+}
+# Run 100 times with gradpain 
+set.seed(7)
+means.list <- c()
+for (i in 1:100) {
+  means.list <- append(means.list, unlist(sampWithRep(gradpain, length(gradpain))[2])) 
+}
+```
+
+The mean of these 100 means is `r round(mean(means.list),2)`.
+
+# Question 4
+
+The standard deviation of these 100 means is `r round(sd(means.list), 2)`. 
+
+# Question 5
+
+```{r box3}
+sampWithRepNTimes <- function(d.vec, n, num.samples) {
+  means.list <- c()
+  for (i in 1:num.samples) {
+      means.list <- append(means.list, mean(sample(d.vec, size=n, replace=TRUE)))
+  }
+  mn <- mean(means.list)
+  sd <- sd(means.list)
+  confint <- c(mn - (1.96*sd), mn + (1.96*sd))
+  return(
+    list(
+      n,
+      num.samples,
+      means.list,
+      mn,
+      sd,
+      confint
+    )
+  )
+}
+
+# run the function
+res <- sampWithRepNTimes(d.vec=gradpain, n=length(gradpain), num.samples=100)
+
+```
+
+The function returns `r round(unlist(res[4]), 2)` as the mean of means.
+
+# Question 6
+
+The function returns `r round(unlist(res[5]), 2)` as the standard deviation of the means.
+
+# Question 7
+
+The function returns [`r round(unlist(res[6]), 2)`] as the 95% confidence interval around the mean.
+
+# Source code
+
+## This document
+```{r comment=''}
+cat(readLines("~/Dropbox/Classes/Q2/CSDE 502/Week04/week_04.Rmd"), sep = '\n')
+```
